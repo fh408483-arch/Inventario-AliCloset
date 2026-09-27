@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ali Closet · Inventario</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ================= LOGIN ================= -->
+  <div id="login-screen" class="login-screen">
+    <form id="login-form" class="login-card">
+      <img src="ali-closet-logo.png" alt="Ali Closet" class="login-logo" />
+      <p class="login-sub">Sistema de inventario</p>
+      <div class="campo">
+        <label for="email">Correo</label>
+        <input id="email" type="email" placeholder="vos@alicloset.com" autocomplete="username" />
+      </div>
+      <div class="campo">
+        <label for="password">Contraseña</label>
+        <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <p class="login-error" id="login-error"></p>
+      <button type="submit" class="btn btn-primary btn-block" id="btn-login">Iniciar sesión</button>
+    </form>
+  </div>
+
+  <!-- ================= APP ================= -->
+  <div id="app" class="app is-hidden">
+
+    <!-- Barra móvil -->
+    <div class="mobilebar">
+      <button class="hamburger" id="hamburger" aria-label="Menú"><i class="ti ti-menu-2"></i></button>
+      <img src="ali-closet-logo.png" alt="Ali Closet" class="mobilebar-logo" />
+    </div>
+    <div class="backdrop" id="backdrop"></div>
+
+    <!-- Menú lateral -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <img src="ali-closet-logo.png" alt="Ali Closet" />
+      </div>
+      <nav class="nav">
+        <button class="nav-item is-active" data-view="inicio"><i class="ti ti-home"></i><span>Inicio</span></button>
+        <button class="nav-item" data-view="productos"><i class="ti ti-tag"></i><span>Productos</span></button>
+        <button class="nav-item" data-view="historial"><i class="ti ti-list-numbers"></i><span>Historial códigos</span></button>
+        <button class="nav-item" data-view="kardex"><i class="ti ti-arrows-exchange"></i><span>Kardex</span></button>
+        <button class="nav-item" data-view="ventas"><i class="ti ti-shopping-cart"></i><span>Ventas</span></button>
+        <button class="nav-item" data-view="reportes"><i class="ti ti-chart-bar"></i><span>Reportes</span></button>
+      </nav>
+      <div class="sidebar-foot">
+        <button class="nav-item" id="btn-logout"><i class="ti ti-logout"></i><span>Salir</span></button>
+      </div>
+    </aside>
+
+    <!-- Contenido -->
+    <main class="content">
+
+      <!-- ===== INICIO ===== -->
+      <section class="view is-active" id="view-inicio">
+        <div class="view-head"><h1>Inicio</h1><p class="sub">Resumen de tu tienda</p></div>
+
+        <div class="panel filtro-panel">
+          <div class="filtros">
+            <div class="campo"><label for="dash-desde">Desde</label><input id="dash-desde" type="date" /></div>
+            <div class="campo"><label for="dash-hasta">Hasta</label><input id="dash-hasta" type="date" /></div>
+            <div class="filtros-acciones">
+              <button class="btn btn-primary" id="dash-aplicar"><i class="ti ti-filter"></i> Aplicar</button>
+              <button class="btn btn-excel" id="dash-excel"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric-grid" id="dash-metrics"></div>
+
+        <div class="chart-grid">
+          <div class="chart-card"><h3>Ventas por día</h3><div class="chart-holder" data-for="chart-ventas-dia"><canvas id="chart-ventas-dia"></canvas></div></div>
+          <div class="chart-card"><h3>Ventas por canal</h3><div class="chart-holder" data-for="chart-canal"><canvas id="chart-canal"></canvas></div></div>
+          <div class="chart-card"><h3>Top productos vendidos</h3><div class="chart-holder" data-for="chart-top"><canvas id="chart-top"></canvas></div></div>
+          <div class="chart-card"><h3>Ventas por categoría</h3><div class="chart-holder" data-for="chart-categoria"><canvas id="chart-categoria"></canvas></div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Por agotarse</h2></div>
+          <div id="dash-lowstock"></div>
+        </div>
+      </section>
+
+      <!-- ===== PRODUCTOS ===== -->
+      <section class="view" id="view-productos">
+        <div class="view-head-row">
+          <div class="view-head"><h1>Productos</h1><p class="sub">Tu catálogo</p></div>
+          <button class="btn btn-primary" id="btn-nuevo-producto"><i class="ti ti-plus"></i> Nuevo producto</button>
+        </div>
+        <div class="toolbar">
+          <input id="buscar-producto" type="text" placeholder="Buscar por nombre o SKU..." />
+          <select id="filtro-categoria">
+            <option value="">Todas</option>
+            <option value="ropa">Ropa</option>
+            <option value="maquillaje">Maquillaje</option>
+          </select>
+          <label class="check"><input type="checkbox" id="ver-archivados" /> Mostrar archivados</label>
+        </div>
+        <div id="productos-lista"></div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Reporte por fechas</h2></div>
+          <div class="filtros">
+            <div class="campo"><label for="pr-desde">Desde</label><input id="pr-desde" type="date" /></div>
+            <div class="campo"><label for="pr-hasta">Hasta</label><input id="pr-hasta" type="date" /></div>
+            <div class="campo">
+              <label for="pr-tipo">Movimiento</label>
+              <select id="pr-tipo">
+                <option value="todos">Ingresos y ventas</option>
+                <option value="entrada">Solo ingresos</option>
+                <option value="salida">Solo ventas</option>
+              </select>
+            </div>
+            <div class="filtros-acciones">
+              <button class="btn btn-primary" id="pr-filtrar"><i class="ti ti-filter"></i> Filtrar</button>
+              <button class="btn btn-excel" id="pr-excel"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+            </div>
+          </div>
+          <input id="pr-buscar" class="lista-buscar" type="text" placeholder="Buscar en el listado (producto o SKU)..." />
+          <div class="table-wrap"><div id="pr-tabla"><p class="vacio">Elegí un rango de fechas y tocá Filtrar.</p></div></div>
+        </div>
+      </section>
+
+      <!-- ===== HISTORIAL DE CÓDIGOS ===== -->
+      <section class="view" id="view-historial">
+        <div class="view-head"><h1>Historial de códigos</h1><p class="sub">Todos los códigos que has creado</p></div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Próximo código sugerido</h2></div>
+          <div class="codigos-grid" id="proximos-codigos"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Códigos creados</h2></div>
+          <div class="filtros">
+            <div class="campo"><label for="hs-desde">Desde</label><input id="hs-desde" type="date" /></div>
+            <div class="campo"><label for="hs-hasta">Hasta</label><input id="hs-hasta" type="date" /></div>
+            <div class="filtros-acciones">
+              <button class="btn btn-primary" id="hs-filtrar"><i class="ti ti-filter"></i> Filtrar</button>
+              <button class="btn btn-excel" id="hs-excel"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+            </div>
+          </div>
+          <input id="hs-buscar" class="lista-buscar" type="text" placeholder="Buscar por código o producto..." />
+          <div class="table-wrap"><div id="hs-tabla"><p class="vacio">Cargando…</p></div></div>
+        </div>
+      </section>
+
+      <!-- ===== KARDEX ===== -->
+      <section class="view" id="view-kardex">
+        <div class="view-head"><h1>Kardex</h1><p class="sub">Movimientos de inventario</p></div>
+        <div class="panel">
+          <div class="campo">
+            <label for="kx-variante">Producto / variante</label>
+            <select id="kx-variante"></select>
+          </div>
+          <details class="acordeon">
+            <summary>Registrar movimiento</summary>
+            <div class="grid-2">
+              <div class="campo">
+                <label for="kx-tipo">Tipo</label>
+                <select id="kx-tipo">
+                  <option value="entrada">Entrada (compra)</option>
+                  <option value="salida">Salida</option>
+                  <option value="ajuste">Ajuste (+/-)</option>
+                </select>
+              </div>
+              <div class="campo">
+                <label for="kx-cantidad">Cantidad</label>
+                <input id="kx-cantidad" type="number" placeholder="10" />
+              </div>
+              <div class="campo" id="kx-costo-wrap">
+                <label for="kx-costo">Costo unitario ($)</label>
+                <input id="kx-costo" type="number" step="0.01" placeholder="9.50" />
+              </div>
+              <div class="campo">
+                <label for="kx-referencia">Referencia</label>
+                <input id="kx-referencia" type="text" placeholder="# factura / nota" />
+              </div>
+              <div class="campo maq-only">
+                <label for="kx-lote">Lote (maquillaje)</label>
+                <input id="kx-lote" type="text" placeholder="L-2026-04" />
+              </div>
+              <div class="campo maq-only">
+                <label for="kx-caducidad">Caducidad</label>
+                <input id="kx-caducidad" type="date" />
+              </div>
+            </div>
+            <button class="btn btn-primary" id="btn-kx-guardar">Registrar</button>
+          </details>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Movimientos</h2>
+            <button class="btn btn-excel btn-sm" id="kx-excel"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+          </div>
+          <div class="table-wrap"><div id="kardex-tabla"></div></div>
+        </div>
+      </section>
+
+      <!-- ===== VENTAS ===== -->
+      <section class="view" id="view-ventas">
+        <div class="view-head"><h1>Ventas</h1><p class="sub">Registrá y consultá tus ventas</p></div>
+        <div class="panel">
+          <div class="panel-head"><h2>Nueva venta</h2></div>
+          <div class="grid-3">
+            <div class="campo" style="grid-column:1/-1;">
+              <label for="vt-variante">Producto</label>
+              <select id="vt-variante"></select>
+            </div>
+            <div class="campo">
+              <label for="vt-cantidad">Cantidad</label>
+              <input id="vt-cantidad" type="number" min="1" value="1" />
+            </div>
+            <div class="campo">
+              <label for="vt-precio">Precio unit. ($)</label>
+              <input id="vt-precio" type="number" step="0.01" />
+            </div>
+            <div class="campo" style="align-self:end;">
+              <button class="btn btn-ghost btn-block" id="btn-vt-add"><i class="ti ti-plus"></i> Agregar</button>
+            </div>
+          </div>
+          <div id="vt-cart"></div>
+          <div class="grid-2">
+            <div class="campo">
+              <label for="vt-canal">Canal</label>
+              <select id="vt-canal">
+                <option>Instagram</option><option>Facebook</option>
+                <option>WhatsApp</option><option>Tienda</option><option>Otro</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="vt-cliente">Cliente (opcional)</label>
+              <input id="vt-cliente" type="text" placeholder="Nombre" />
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" id="btn-vt-guardar">Registrar venta</button>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Ventas por fecha</h2></div>
+          <div class="filtros">
+            <div class="campo"><label for="vt-desde">Desde</label><input id="vt-desde" type="date" /></div>
+            <div class="campo"><label for="vt-hasta">Hasta</label><input id="vt-hasta" type="date" /></div>
+            <div class="filtros-acciones">
+              <button class="btn btn-primary" id="vt-filtrar"><i class="ti ti-filter"></i> Filtrar</button>
+              <button class="btn btn-excel" id="vt-excel"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+            </div>
+          </div>
+          <input id="vt-buscar" class="lista-buscar" type="text" placeholder="Buscar en el listado (canal o cliente)..." />
+          <div id="ventas-historial"><p class="vacio">Elegí un rango de fechas y tocá Filtrar para ver las ventas.</p></div>
+        </div>
+      </section>
+
+      <!-- ===== REPORTES ===== -->
+      <section class="view" id="view-reportes">
+        <div class="view-head"><h1>Reportes</h1><p class="sub">Los números para decidir</p></div>
+
+        <div class="panel filtro-panel">
+          <div class="filtros">
+            <div class="campo"><label for="rep-mes">Mes</label><input id="rep-mes" type="month" /></div>
+            <div class="campo"><label for="rep-desde">Desde</label><input id="rep-desde" type="date" /></div>
+            <div class="campo"><label for="rep-hasta">Hasta</label><input id="rep-hasta" type="date" /></div>
+            <div class="filtros-acciones">
+              <button class="btn btn-primary" id="rep-filtrar"><i class="ti ti-filter"></i> Filtrar</button>
+              <button class="btn btn-excel" id="rep-excel"><i class="ti ti-file-spreadsheet"></i> Excel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel"><div class="panel-head"><h2>Más vendidos</h2></div><div id="rep-vendidos"></div></div>
+        <div class="panel"><div class="panel-head"><h2>Margen por producto</h2></div><div class="table-wrap"><div id="rep-margen"></div></div></div>
+        <div class="panel"><div class="panel-head"><h2>Bajo mínimo</h2></div><div id="rep-bajomin"></div></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODAL: NUEVO PRODUCTO ================= -->
+  <div class="modal is-hidden" id="modal-producto">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Nuevo producto</h2>
+        <button class="modal-close" id="modal-close"><i class="ti ti-x"></i></button>
+      </div>
+      <form id="form-producto" class="modal-body" novalidate>
+        <label for="np-fotos" class="dropzone">
+          <span class="dz-icon"><i class="ti ti-camera-plus"></i></span>
+          <span class="dz-text">Subí hasta 5 fotos</span>
+          <span class="dz-hint">JPG o PNG · tocá para elegir</span>
+        </label>
+        <input type="file" id="np-fotos" accept="image/png, image/jpeg" multiple hidden />
+        <div class="previews" id="np-previews"></div>
+
+        <div class="campo">
+          <label for="np-nombre">Nombre del producto</label>
+          <input id="np-nombre" type="text" placeholder="Blusa manga larga" />
+          <span class="error" data-for="np-nombre"></span>
+        </div>
+
+        <div class="campo">
+          <label>Categoría</label>
+          <div class="segmento">
+            <button type="button" class="seg-btn is-active" data-cat="ropa">Ropa</button>
+            <button type="button" class="seg-btn" data-cat="maquillaje">Maquillaje</button>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="np-tipo-codigo">Tipo de prenda (para sugerir el código)</label>
+          <select id="np-tipo-codigo">
+            <option value="">— Elegí un tipo y te sugiero el código —</option>
+            <option value="V">Vestidos (V-)</option>
+            <option value="C">Camisas mujer (C-)</option>
+            <option value="CH">Camisas hombre (CH-)</option>
+            <option value="MQ">Maquillaje (MQ-)</option>
+            <option value="LEN">Lencería (LEN-)</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="campo"><label for="np-marca">Marca</label><input id="np-marca" type="text" placeholder="Marca o proveedor" /></div>
+          <div class="campo"><label for="np-sku">Código (SKU)</label><input id="np-sku" type="text" placeholder="Se genera solo, o escribilo a mano" /><span class="hint" id="np-sku-hint"></span></div>
+        </div>
+
+        <div class="campo"><label for="np-descripcion">Descripción</label><textarea id="np-descripcion" rows="2" placeholder="Detalles, cuidados..."></textarea></div>
+
+        <div class="grupo-cat" id="np-campos-ropa">
+          <div class="grid-3">
+            <div class="campo"><label for="np-talla">Talla / medida</label>
+              <input id="np-talla" type="text" placeholder="M, 34, 90cm..." /></div>
+            <div class="campo"><label for="np-color">Color</label><input id="np-color" type="text" placeholder="Negro" /></div>
+            <div class="campo"><label for="np-material">Material</label><input id="np-material" type="text" placeholder="Algodón" /></div>
+          </div>
+
+          <div class="medidas-box">
+            <div class="medidas-box-head">
+              <span class="medidas-titulo"><i class="ti ti-ruler-2"></i> Medidas (cm)</span>
+              <span class="medidas-nota">Opcional · llená solo las que uses</span>
+            </div>
+            <div class="medidas-grid">
+              <div class="medida"><label for="med-busto">Busto</label><div class="med-input"><input id="med-busto" type="number" min="0" step="0.5" placeholder="0"/><span>cm</span></div></div>
+              <div class="medida"><label for="med-cintura">Cintura</label><div class="med-input"><input id="med-cintura" type="number" min="0" step="0.5" placeholder="0"/><span>cm</span></div></div>
+              <div class="medida"><label for="med-cadera">Cadera</label><div class="med-input"><input id="med-cadera" type="number" min="0" step="0.5" placeholder="0"/><span>cm</span></div></div>
+              <div class="medida"><label for="med-largo">Largo</label><div class="med-input"><input id="med-largo" type="number" min="0" step="0.5" placeholder="0"/><span>cm</span></div></div>
+              <div class="medida"><label for="med-hombro">Hombros</label><div class="med-input"><input id="med-hombro" type="number" min="0" step="0.5" placeholder="0"/><span>cm</span></div></div>
+              <div class="medida"><label for="med-manga">Manga</label><div class="med-input"><input id="med-manga" type="number" min="0" step="0.5" placeholder="0"/><span>cm</span></div></div>
+            </div>
+            <div class="campo" style="margin-top:12px;">
+              <label for="med-otras">Otras medidas / notas</label>
+              <input id="med-otras" type="text" placeholder="Ej: tiro 28cm, ruedo 120cm..." />
+            </div>
+            <p class="medidas-tip"><i class="ti ti-camera"></i> Tip: también podés subir una foto de la prenda con la cinta métrica como una de las fotos de arriba.</p>
+          </div>
+        </div>
+
+        <div class="grupo-cat is-hidden" id="np-campos-maquillaje">
+          <div class="grid-2">
+            <div class="campo"><label for="np-tono">Tono</label><input id="np-tono" type="text" placeholder="Ruby" /></div>
+            <div class="campo"><label for="np-contenido">Contenido</label><input id="np-contenido" type="text" placeholder="15 ml" /></div>
+            <div class="campo"><label for="np-lote">Lote</label><input id="np-lote" type="text" placeholder="L-2026-04" /></div>
+            <div class="campo"><label for="np-caducidad">Caducidad</label><input id="np-caducidad" type="date" /></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="campo"><label for="np-precio">Precio de venta ($)</label><input id="np-precio" type="number" step="0.01" min="0" placeholder="18.00" /><span class="error" data-for="np-precio"></span></div>
+          <div class="campo"><label for="np-costo">Costo de compra ($)</label><input id="np-costo" type="number" step="0.01" min="0" placeholder="9.50" /></div>
+          <div class="campo"><label for="np-stock">Stock inicial</label><input id="np-stock" type="number" min="0" placeholder="12" /></div>
+          <div class="campo"><label for="np-minimo">Stock mínimo</label><input id="np-minimo" type="number" min="0" placeholder="3" /></div>
+        </div>
+
+        <div class="acciones">
+          <button type="button" class="btn btn-ghost" id="np-cancelar">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="np-guardar">Guardar producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: VER PRODUCTO (fotos) ================= -->
+  <div class="modal is-hidden" id="modal-ver">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="ver-titulo">Producto</h2>
+        <button class="modal-close" id="ver-close"><i class="ti ti-x"></i></button>
+      </div>
+      <div class="modal-body" id="ver-body"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
